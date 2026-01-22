@@ -1,4 +1,5 @@
 pub mod account_factory;
+pub mod earn_reporter;
 pub mod eth_712_account;
 pub(crate) mod known_addresses;
 pub mod primer;
