@@ -4,11 +4,12 @@ use contracts::earn_reporter::earn_reporter::{
 };
 use openzeppelin::access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use snforge_std::cheatcodes::events::{EventSpyTrait, EventsFilterTrait};
-use snforge_std::{ContractClassTrait, DeclareResultTrait};
 use starknet::syscalls::get_class_hash_at_syscall;
 use starknet::{ContractAddress, SyscallResultTrait, get_contract_address};
 use starkware_utils_testing::test_utils::{assert_expected_event_emitted, cheat_caller_address_once};
-use crate::test_utils::{declare_dummy_eth_address_contract, get_event_by_selector};
+use crate::test_utils::{
+    declare_dummy_eth_address_contract, deploy_earn_reporter, get_event_by_selector,
+};
 
 fn default_order_created_event() -> OrderCreated {
     OrderCreated {
@@ -23,16 +24,6 @@ fn default_order_created_event() -> OrderCreated {
         token: 0x5678.try_into().unwrap(),
         is_closing_position: false,
     }
-}
-
-fn deploy_earn_reporter(owner: ContractAddress) -> ContractAddress {
-    let earn_reporter_class = snforge_std::declare("EarnReporter")
-        .unwrap_syscall()
-        .contract_class();
-    let (earn_reporter_addr, _) = earn_reporter_class
-        .deploy(@array![owner.into()])
-        .unwrap_syscall();
-    earn_reporter_addr
 }
 
 fn call_report_order_created(reporter: IEarnReporterDispatcher, event: @OrderCreated) {

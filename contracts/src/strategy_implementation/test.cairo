@@ -6,6 +6,7 @@ use contracts::strategy_implementation::interface::{
     IStrategyImplementationSafeDispatcher, IStrategyImplementationSafeDispatcherTrait,
 };
 use core::array::ArrayTrait;
+use core::num::traits::Zero;
 use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::TokenImpl;
 use snforge_std::cheatcodes::events::{EventSpyTrait, EventsFilterTrait};
@@ -24,7 +25,7 @@ use crate::strategy_implementation::test_utils::{
     dummy_apply_parameters_with_protocol, get_account_factory, get_position_owner,
     serialize_signature, setup_strategy_implementation_test_env, validate_avnu_swap,
 };
-use crate::test_utils::get_event_by_selector;
+use crate::test_utils::{APP_GOVERNOR, deploy_earn_reporter, get_event_by_selector};
 
 
 #[test]
@@ -65,9 +66,16 @@ fn test_apply_on_self_invalid_caller_panics() {
     let parameters = array![].span();
 
     // This should panic with 'ONLY_SELF_CALLER' due to the caller-address guard in apply_on_self.
+    let eth_address: EthAddress = 0.try_into().unwrap();
     strategy_implementation
         .apply_on_self(
-            token_in: WBTC, amount: 0_u256, :position_owner, protocol: 'ENDUR', :parameters,
+            token_in: WBTC,
+            amount: 0_u256,
+            :position_owner,
+            :eth_address,
+            chain_id: 0,
+            protocol: 'ENDUR',
+            :parameters,
         );
 }
 
@@ -1043,4 +1051,89 @@ fn test_deposit_troves_failure_on_troves() {
         _lst_shares.shares_balance_of(strategy_implementation_addr) == 0,
         "strategy implementation should have no shares of the LST",
     );
+}
+
+/// set_earn_reporter should only be callable by the app governor.
+#[test]
+#[should_panic(expected: "ONLY_APP_GOVERNOR")]
+fn test_set_earn_reporter_invalid_caller_panics() {
+    let strategy_implementation_addr = setup_strategy_implementation_test_env();
+    let strategy_implementation = IStrategyImplementationDispatcher {
+        contract_address: strategy_implementation_addr,
+    };
+
+    // Impersonate a non-governor caller
+    cheat_caller_address_once(
+        contract_address: strategy_implementation_addr, caller_address: 0x1234.try_into().unwrap(),
+    );
+
+    let reporter: ContractAddress = 0x9999.try_into().unwrap();
+    strategy_implementation.set_earn_reporter(:reporter);
+}
+
+/// set_earn_reporter: sets the reporter address and emits EarnReporterChanged.
+#[test]
+fn test_set_earn_reporter_happy_flow() {
+    let strategy_implementation_addr = setup_strategy_implementation_test_env();
+    let strategy_implementation = IStrategyImplementationDispatcher {
+        contract_address: strategy_implementation_addr,
+    };
+
+    // Initially reporter should be zero
+    assert!(strategy_implementation.earn_reporter().is_zero(), "Reporter should be zero initially");
+
+    // Set reporter as APP_GOVERNOR
+    let reporter: ContractAddress = 0x9999.try_into().unwrap();
+    let mut spy = snforge_std::spy_events();
+    cheat_caller_address_once(
+        contract_address: strategy_implementation_addr, caller_address: APP_GOVERNOR(),
+    );
+    strategy_implementation.set_earn_reporter(:reporter);
+
+    // Verify reporter was set
+    assert!(strategy_implementation.earn_reporter() == reporter, "Reporter should be set");
+
+    // Verify EarnReporterChanged event was emitted
+    let events = spy.get_events().emitted_by(strategy_implementation_addr).events.span();
+    assert!(events.len() == 1, "Expected one EarnReporterChanged event");
+    let event = get_event_by_selector(:events, selector: selector!("EarnReporterChanged"));
+    assert!(event.is_some(), "EarnReporterChanged event expected");
+}
+
+/// Apply(WBTC, ENDUR) with reporter configured: emits OrderCreated on the reporter contract.
+#[test]
+fn test_apply_endur_with_reporter_emits_order_created() {
+    let strategy_implementation_addr = setup_strategy_implementation_test_env();
+    let strategy_implementation = IStrategyImplementationDispatcher {
+        contract_address: strategy_implementation_addr,
+    };
+    let apply_caller = 0x4324.try_into().unwrap();
+
+    // Deploy earn reporter and set it
+    let reporter_addr = deploy_earn_reporter(owner: starknet::get_contract_address());
+    cheat_caller_address_once(
+        contract_address: strategy_implementation_addr, caller_address: APP_GOVERNOR(),
+    );
+    strategy_implementation.set_earn_reporter(reporter: reporter_addr);
+
+    // Deploy the ERC4626 mock contract at the ENDUR_WBTC address.
+    deploy_erc4626_deposit_mint_mock(erc4626_asset_address: WBTC, address_to_deploy_at: ENDUR_WBTC);
+
+    let apply_parameters = build_prefunded_apply_parameters_with_token_address(
+        :strategy_implementation_addr,
+        account_to_fund: apply_caller,
+        address_to_deploy_at: WBTC,
+        protocol: 'ENDUR',
+    );
+
+    let mut spy = snforge_std::spy_events();
+    apply(:strategy_implementation_addr, :apply_caller, parameters: apply_parameters);
+
+    // Verify OrderCreated event on reporter contract
+    let reporter_events = spy.get_events().emitted_by(reporter_addr).events.span();
+    assert!(reporter_events.len() == 1, "Expected one OrderCreated event on reporter");
+    let order_created = get_event_by_selector(
+        events: reporter_events, selector: selector!("OrderCreated"),
+    );
+    assert!(order_created.is_some(), "OrderCreated event expected");
 }
