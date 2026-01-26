@@ -4,6 +4,9 @@ pub mod StrategyImplementation {
     use contracts::account_factory::account_factory::{
         IAccountFactoryDispatcher, IAccountFactoryDispatcherTrait,
     };
+    use contracts::earn_reporter::earn_reporter::{
+        IEarnReporterDispatcher, IEarnReporterDispatcherTrait,
+    };
     use contracts::known_addresses::MIDAS_RE7_BTC;
     use contracts::strategy_implementation::avnu_interface::AvnuParameters;
     use contracts::strategy_implementation::interface::{
@@ -14,13 +17,16 @@ pub mod StrategyImplementation {
         IERC4626DepositDispatcher, IERC4626DepositDispatcherTrait, Strategy, StrategyTrait,
         avnu_multi_route_swap, deserialize_signature, strategy_from_protocol_and_token,
     };
+    use core::num::traits::Zero;
     use core::panic_with_felt252;
     use core::traits::Into;
     use openzeppelin::access::accesscontrol::AccessControlComponent;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use starknet::{ClassHash, ContractAddress, get_caller_address, get_contract_address};
+    use starknet::{
+        ClassHash, ContractAddress, EthAddress, get_caller_address, get_contract_address,
+    };
     use starkware_utils::components::replaceability::ReplaceabilityComponent;
     use starkware_utils::components::replaceability::ReplaceabilityComponent::InternalReplaceabilityTrait;
     use starkware_utils::components::roles::RolesComponent;
@@ -29,6 +35,9 @@ pub mod StrategyImplementation {
     component!(path: AccessControlComponent, storage: accesscontrol, event: accesscontrolEvent);
     component!(path: SRC5Component, storage: src5, event: src5Event);
     component!(path: ReplaceabilityComponent, storage: replaceability, event: ReplaceabilityEvent);
+
+    pub(crate) const DEPOSIT: felt252 = 'deposit';
+
 
     #[abi(embed_v0)]
     impl RolesImpl = RolesComponent::RolesImpl<ContractState>;
@@ -47,6 +56,7 @@ pub mod StrategyImplementation {
         #[substorage(v0)]
         replaceability: ReplaceabilityComponent::Storage,
         account_factory: ContractAddress,
+        earn_reporter: ContractAddress,
     }
 
     #[event]
@@ -65,6 +75,7 @@ pub mod StrategyImplementation {
         MultiRouteSwap: MultiRouteSwap,
         AccountClassHashChanged: AccountClassHashChanged,
         PositionOwnerDeployed: PositionOwnerDeployed,
+        EarnReporterChanged: EarnReporterChanged,
     }
 
 
@@ -106,6 +117,12 @@ pub mod StrategyImplementation {
         pub token_in: ContractAddress,
         pub amount: u256,
         pub errors: Array<felt252>,
+    }
+
+    #[derive(Drop, starknet::Event, Debug, PartialEq)]
+    pub struct EarnReporterChanged {
+        pub previous_reporter: ContractAddress,
+        pub new_reporter: ContractAddress,
     }
 
     #[generate_trait]
@@ -227,6 +244,34 @@ pub mod StrategyImplementation {
                 );
             buy_token_gained
         }
+
+        fn report_action(
+            ref self: ContractState,
+            position_owner: ContractAddress,
+            eth_address: EthAddress,
+            strategy_id: felt252,
+            chain_id: felt252,
+            asset_amount: u256,
+            shares_amount: u256,
+            token: ContractAddress,
+        ) {
+            let reporter = self.earn_reporter.read();
+            // Skips reporting if earn_reporter address is zero.
+            if reporter.is_non_zero() {
+                IEarnReporterDispatcher { contract_address: reporter }
+                    .report_order_created(
+                        order_creator_address: position_owner,
+                        evm_address: eth_address,
+                        :strategy_id,
+                        order_type: DEPOSIT,
+                        original_chain_id: chain_id.into(),
+                        :asset_amount,
+                        :shares_amount,
+                        :token,
+                        is_closing_position: false,
+                    );
+            }
+        }
     }
 
     #[constructor]
@@ -248,6 +293,8 @@ pub mod StrategyImplementation {
             token_in: ContractAddress,
             amount: u256,
             position_owner: ContractAddress,
+            eth_address: EthAddress,
+            chain_id: felt252,
             protocol: felt252,
             mut parameters: Span<felt252>,
         ) {
@@ -256,7 +303,7 @@ pub mod StrategyImplementation {
             assert(get_caller_address() == contract_address, 'ONLY_SELF_CALLER');
 
             let strategy: Strategy = strategy_from_protocol_and_token(:protocol, :token_in);
-            match strategy {
+            let shares_amount = match strategy {
                 Strategy::Endur(_) => {
                     // No additional parameters are expected for Endur after the common header.
                     assert(parameters.len() == 0, 'UNEXPECTED_PARAMETERS');
@@ -279,6 +326,7 @@ pub mod StrategyImplementation {
                                 },
                             ),
                         );
+                    lst_amount
                 },
                 Strategy::Troves(token) => {
                     // No additional parameters are expected for Troves after the common header.
@@ -317,6 +365,7 @@ pub mod StrategyImplementation {
                                 },
                             ),
                         );
+                    troves_amount
                 },
                 Strategy::Avnu => {
                     self
@@ -326,9 +375,19 @@ pub mod StrategyImplementation {
                             strategy: strategy.strategy_address(),
                             :position_owner,
                             avnu_parameters: parameters,
-                        );
+                        )
                 },
-            }
+            };
+            self
+                .report_action(
+                    :position_owner,
+                    :eth_address,
+                    strategy_id: strategy.strategy_id(),
+                    :chain_id,
+                    asset_amount: amount,
+                    :shares_amount,
+                    token: token_in,
+                );
         }
 
         /// Applies the strategy for the caller by transferring `amount` of `token_in`, executing
@@ -367,9 +426,10 @@ pub mod StrategyImplementation {
             };
 
             let signature = deserialize_signature(ref parameters);
-            // `chain_id` is not used by StrategyImplementation; it is included to keep the header
-            // format consistent with the parameters used for outside execution.
-            let _chain_id: felt252 = Serde::deserialize(ref parameters)
+            // `chain_id` is not used to deploy the contract; it is included to keep the header
+            // format consistent with the parameters used for outside execution. In addition, it is
+            // used for the reporter.
+            let chain_id: felt252 = Serde::deserialize(ref parameters)
                 .expect('SERIALIZATION_FAILED');
 
             let position_owner = account_factory.deploy_account(:eth_address, :signature);
@@ -381,7 +441,15 @@ pub mod StrategyImplementation {
             let result = IStrategyImplementationSafeDispatcher {
                 contract_address: get_contract_address(),
             }
-                .apply_on_self(:token_in, :amount, :position_owner, :protocol, :parameters);
+                .apply_on_self(
+                    :token_in,
+                    :amount,
+                    :position_owner,
+                    :eth_address,
+                    :chain_id,
+                    :protocol,
+                    :parameters,
+                );
 
             self
                 .handle_apply_on_self_result(
@@ -391,6 +459,24 @@ pub mod StrategyImplementation {
 
         fn account_factory(self: @ContractState) -> ContractAddress {
             self.account_factory.read()
+        }
+
+        /// Sets the earn reporter contract address for order reporting.
+        fn set_earn_reporter(ref self: ContractState, reporter: ContractAddress) {
+            self.roles.only_app_governor();
+            let previous_reporter = self.earn_reporter.read();
+            self.earn_reporter.write(reporter);
+            self
+                .emit(
+                    Event::EarnReporterChanged(
+                        EarnReporterChanged { previous_reporter, new_reporter: reporter },
+                    ),
+                );
+        }
+
+        /// Returns the current earn reporter contract address.
+        fn earn_reporter(self: @ContractState) -> ContractAddress {
+            self.earn_reporter.read()
         }
     }
 }

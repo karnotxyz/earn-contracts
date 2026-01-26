@@ -1,4 +1,4 @@
-use starknet::ContractAddress;
+use starknet::{ContractAddress, EthAddress};
 
 #[starknet::interface]
 pub trait IStrategyImplementation<TContractState> {
@@ -11,9 +11,16 @@ pub trait IStrategyImplementation<TContractState> {
         token_in: ContractAddress,
         amount: u256,
         position_owner: ContractAddress,
+        eth_address: EthAddress,
+        chain_id: felt252,
         protocol: felt252,
         parameters: Span<felt252>,
     );
+
+    fn set_earn_reporter(ref self: TContractState, reporter: ContractAddress);
+
+    /// Returns the current earn reporter contract address.
+    fn earn_reporter(self: @TContractState) -> ContractAddress;
 
     /// Applies the strategy for the caller by transferring `amount` of `token_in`, executing
     /// the strategy encoded in the protocol selector and token_in, in `parameters`, and
