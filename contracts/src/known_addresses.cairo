@@ -19,14 +19,9 @@ pub(crate) const LBTC: ContractAddress =
     .try_into()
     .unwrap();
 
+// MIDAS token.
 pub(crate) const MIDAS_RE7_BTC: ContractAddress =
     0x04E4fb1a9Ca7E84bAe609B9Dc0078ad7719E49187Ae7e425bB47D131710Eddac
-    .try_into()
-    .unwrap();
-
-// MIDAS token.
-pub(crate) const MIDAS: ContractAddress =
-    0x04e4fb1a9ca7e84bae609b9dc0078ad7719e49187ae7e425bb47d131710eddac
     .try_into()
     .unwrap();
 
