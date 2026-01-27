@@ -69,6 +69,11 @@ pub(crate) const ENDUR_SOLVBTC: ContractAddress =
     .try_into()
     .unwrap();
 
+// Contract addresses for ForgeYields strategies. Only WBTC is supported.
+pub(crate) const FORGE_YIELDS_WBTC: ContractAddress =
+    0x04dd39de0a588f5e1c7a8377e1bef2c49caaee49a11433429d2c48f587b3a492
+    .try_into()
+    .unwrap();
 
 // Avnu strategy
 pub(crate) const AVNU_EXCHANGE: ContractAddress =

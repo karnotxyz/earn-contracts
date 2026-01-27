@@ -142,8 +142,8 @@ pub mod StrategyImplementation {
                 // has reverted.
                 IERC20Dispatcher { contract_address: token_in }.transfer(position_owner, amount);
                 // ApplyFailed's protocol emits the protocol selector felt (e.g. 'ENDUR',
-                // 'TROVES', 'AVNU') rather than a strategy contract address, to ensure the
-                // tx won't revert if the protocol selector is invalid.
+                // 'TROVES', 'FORGE_YIELDS', 'AVNU') rather than a strategy contract address,
+                // to ensure the tx won't revert if the protocol selector is invalid.
                 // The error was propagated from the failed call.
                 self
                     .emit(
@@ -327,6 +327,32 @@ pub mod StrategyImplementation {
                             ),
                         );
                     lst_amount
+                },
+                Strategy::ForgeYields(_) => {
+                    // No additional parameters are expected for ForgeYields after the common
+                    // header.
+                    assert(parameters.len() == 0, 'UNEXPECTED_PARAMETERS');
+                    // ForgeYields only accepts WBTC (enforced in strategy_from_protocol_and_token).
+                    let shares_amount = self
+                        .deposit_token_to_vault(
+                            strategy: strategy.strategy_address(),
+                            token: token_in,
+                            :amount,
+                            funds_receiver: position_owner,
+                        );
+                    self
+                        .emit(
+                            Event::Deposited(
+                                Deposited {
+                                    receiver_address: position_owner,
+                                    token_deposited: token_in,
+                                    amount_deposited: amount,
+                                    token_received: strategy.strategy_address(),
+                                    amount_received: shares_amount,
+                                },
+                            ),
+                        );
+                    shares_amount
                 },
                 Strategy::Troves(token) => {
                     // No additional parameters are expected for Troves after the common header.
