@@ -17,6 +17,13 @@ pub(crate) const CONTRACT_ADDRESS_SALT: felt252 = 0;
 
 const CONTRACT_ADDRESS_PREFIX: felt252 = 'STARKNET_CONTRACT_ADDRESS';
 
+// Protocol ID constants
+pub(crate) const PROTOCOL_AVNU: felt252 = 'AVNU';
+pub(crate) const PROTOCOL_ENDUR: felt252 = 'ENDUR';
+pub(crate) const PROTOCOL_TROVES: felt252 = 'TROVES';
+pub(crate) const PROTOCOL_FORGE_YIELDS: felt252 = 'FORGE_YIELDS';
+pub(crate) const PROTOCOL_NOON: felt252 = 'NOON';
+
 
 #[starknet::interface]
 pub(crate) trait IERC4626Deposit<TContractState> {
@@ -28,7 +35,7 @@ pub(crate) trait IERC4626Deposit<TContractState> {
 /// Supported Bitcoin wrapper tokens that can be used as `token_in` by the strategy
 /// implementation. Each variant maps to a concrete ERC20 contract address via
 /// `TokenTrait::contract_address`.
-#[derive(Drop, Copy)]
+#[derive(Drop, Copy, PartialEq)]
 pub(crate) enum Token {
     WBTC,
     TBTC,
@@ -75,11 +82,11 @@ pub(crate) impl _StrategyImpl of StrategyTrait {
     /// Returns the strategy identifier as a felt252 short string.
     fn strategy_id(self: Strategy) -> felt252 {
         match self {
-            Strategy::Endur(_) => 'ENDUR',
-            Strategy::Troves(_) => 'TROVES',
-            Strategy::ForgeYields(_) => 'FORGE_YIELDS',
-            Strategy::Noon(_) => 'NOON',
-            Strategy::Avnu => 'AVNU',
+            Strategy::Endur(_) => PROTOCOL_ENDUR,
+            Strategy::Troves(_) => PROTOCOL_TROVES,
+            Strategy::ForgeYields(_) => PROTOCOL_FORGE_YIELDS,
+            Strategy::Noon(_) => PROTOCOL_NOON,
+            Strategy::Avnu => PROTOCOL_AVNU,
         }
     }
 }
@@ -124,28 +131,28 @@ pub(crate) impl _TokenImpl of TokenTrait {
 pub(crate) fn strategy_from_protocol_and_token(
     protocol: felt252, token_in: ContractAddress,
 ) -> Strategy {
-    if protocol == 'AVNU' {
+    if protocol == PROTOCOL_AVNU {
         return Strategy::Avnu;
     }
 
     let token = TokenTrait::new_from_token_address(:token_in);
-    if protocol == 'TROVES' {
+    if protocol == PROTOCOL_TROVES {
         return Strategy::Troves(token);
     }
 
-    if protocol == 'ENDUR' {
+    if protocol == PROTOCOL_ENDUR {
         return Strategy::Endur(token);
     }
 
-    if protocol == 'FORGE_YIELDS' {
+    if protocol == PROTOCOL_FORGE_YIELDS {
         // FORGE_YIELDS only supports WBTC
-        assert(token_in == WBTC, 'FORGE_YIELDS_ONLY_WBTC');
+        assert(token == Token::WBTC, 'FORGE_YIELDS_ONLY_WBTC');
         return Strategy::ForgeYields(Token::WBTC);
     }
 
-    if protocol == 'NOON' {
+    if protocol == PROTOCOL_NOON {
         // NOON only supports WBTC
-        assert(token_in == WBTC, 'NOON_ONLY_WBTC');
+        assert(token == Token::WBTC, 'NOON_ONLY_WBTC');
         return Strategy::Noon(Token::WBTC);
     }
 

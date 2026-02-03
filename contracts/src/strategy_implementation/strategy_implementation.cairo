@@ -255,7 +255,7 @@ pub mod StrategyImplementation {
             shares_amount: u256,
             token: ContractAddress,
         ) {
-            let reporter = self.earn_reporter.read();
+            let reporter = self.earn_reporter();
             // Skips reporting if earn_reporter address is zero.
             if reporter.is_non_zero() {
                 IEarnReporterDispatcher { contract_address: reporter }
@@ -466,7 +466,7 @@ pub mod StrategyImplementation {
         /// Sets the earn reporter contract address for order reporting.
         fn set_earn_reporter(ref self: ContractState, reporter: ContractAddress) {
             self.roles.only_app_governor();
-            let previous_reporter = self.earn_reporter.read();
+            let previous_reporter = self.earn_reporter();
             self.earn_reporter.write(reporter);
             self
                 .emit(

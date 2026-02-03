@@ -26,6 +26,9 @@ use crate::strategy_implementation::test_utils::{
     dummy_apply_parameters_with_protocol, get_account_factory, get_position_owner,
     serialize_signature, setup_strategy_implementation_test_env, validate_avnu_swap,
 };
+use crate::strategy_implementation::utils::{
+    PROTOCOL_ENDUR, PROTOCOL_FORGE_YIELDS, PROTOCOL_NOON, PROTOCOL_TROVES,
+};
 use crate::test_utils::{APP_GOVERNOR, deploy_earn_reporter, get_event_by_selector};
 
 
@@ -75,7 +78,7 @@ fn test_apply_on_self_invalid_caller_panics() {
             :position_owner,
             :eth_address,
             chain_id: 0,
-            protocol: 'ENDUR',
+            protocol: PROTOCOL_ENDUR,
             :parameters,
         );
 }
@@ -121,7 +124,7 @@ fn test_apply_invalid_token_emits_apply_failed_and_refunds() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: unknown_token,
-        protocol: 'ENDUR',
+        protocol: PROTOCOL_ENDUR,
     );
 
     let mut spy = snforge_std::spy_events();
@@ -228,7 +231,7 @@ fn test_deposit_endur_token_successful() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'ENDUR',
+        protocol: PROTOCOL_ENDUR,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -245,7 +248,7 @@ fn test_deposit_endur_token_successful() {
     assert_deposited_event(
         :events,
         funds_receiver: position_owner,
-        protocol: 'ENDUR',
+        protocol: PROTOCOL_ENDUR,
         wrapper_token: WBTC,
         amount_deposited: apply_parameters.amount,
         amount_received: expected_amount,
@@ -294,7 +297,7 @@ fn test_deposit_token_to_vault_balance_greater_than_amount() {
     );
     let amount = 300_u256;
     let apply_parameters = dummy_apply_parameters_with_protocol(
-        protocol: 'ENDUR', token_in: WBTC, :amount,
+        protocol: PROTOCOL_ENDUR, token_in: WBTC, :amount,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -309,7 +312,7 @@ fn test_deposit_token_to_vault_balance_greater_than_amount() {
     assert_deposited_event(
         :events,
         funds_receiver: position_owner,
-        protocol: 'ENDUR',
+        protocol: PROTOCOL_ENDUR,
         wrapper_token: WBTC,
         amount_deposited: amount,
         amount_received: expected_amount,
@@ -473,7 +476,7 @@ fn test_deposit_forgeyields_successful() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'FORGE_YIELDS',
+        protocol: PROTOCOL_FORGE_YIELDS,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -487,7 +490,7 @@ fn test_deposit_forgeyields_successful() {
     assert_deposited_event(
         :events,
         funds_receiver: position_owner,
-        protocol: 'FORGE_YIELDS',
+        protocol: PROTOCOL_FORGE_YIELDS,
         wrapper_token: WBTC,
         amount_deposited: apply_parameters.amount,
         amount_received: expected_amount,
@@ -517,7 +520,7 @@ fn test_deposit_forge_yields_failure() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'FORGE_YIELDS',
+        protocol: PROTOCOL_FORGE_YIELDS,
     );
 
     // The apply should fail with 'ERROR' on the deposit to the FORGE_YIELDS vault and the
@@ -548,7 +551,7 @@ fn test_forgeyields_only_accepts_wbtc() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: TBTC,
-        protocol: 'FORGE_YIELDS',
+        protocol: PROTOCOL_FORGE_YIELDS,
     );
 
     // The apply should fail with 'FORGE_YIELDS_ONLY_WBTC' during strategy classification.
@@ -582,7 +585,7 @@ fn test_deposit_noon_successful() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'NOON',
+        protocol: PROTOCOL_NOON,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -596,7 +599,7 @@ fn test_deposit_noon_successful() {
     assert_deposited_event(
         :events,
         funds_receiver: position_owner,
-        protocol: 'NOON',
+        protocol: PROTOCOL_NOON,
         wrapper_token: WBTC,
         amount_deposited: apply_parameters.amount,
         amount_received: expected_amount,
@@ -626,7 +629,7 @@ fn test_deposit_noon_failure() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'NOON',
+        protocol: PROTOCOL_NOON,
     );
 
     // The apply should fail with 'ERROR' on the deposit to the NOON vault and the
@@ -656,7 +659,7 @@ fn test_noon_only_accepts_wbtc() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: TBTC,
-        protocol: 'NOON',
+        protocol: PROTOCOL_NOON,
     );
 
     // The apply should fail with 'NOON_ONLY_WBTC' during strategy classification.
@@ -694,7 +697,7 @@ fn test_deposit_troves_token_successful() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: TBTC,
-        protocol: 'TROVES',
+        protocol: PROTOCOL_TROVES,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -709,7 +712,7 @@ fn test_deposit_troves_token_successful() {
     assert_deposited_event(
         :events,
         funds_receiver: position_owner,
-        protocol: 'TROVES',
+        protocol: PROTOCOL_TROVES,
         wrapper_token: TBTC,
         amount_deposited: apply_parameters.amount,
         amount_received: expected_trvoes_amount,
@@ -778,7 +781,7 @@ fn test_deposit_troves_failure_on_endur() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: TBTC,
-        protocol: 'TROVES',
+        protocol: PROTOCOL_TROVES,
     );
 
     // The apply should fail with 'ERROR' on the first deposit to the ENDUR_TBTC vault and the
@@ -1148,7 +1151,7 @@ fn test_apply_oversized_parameters_fail_for_endur_and_troves() {
 
     // Build a valid ENDUR(TBTC) apply() call and then replace the parameters span with an
     // oversized one.
-    let protocol = 'ENDUR';
+    let protocol = PROTOCOL_ENDUR;
     let apply_parameters = build_prefunded_apply_parameters_with_token_address(
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
@@ -1190,7 +1193,7 @@ fn test_apply_oversized_parameters_fail_for_endur_and_troves() {
     let apply_caller_2 = 0x222222.try_into().unwrap();
     let mut spy_troves = snforge_std::spy_events();
 
-    let protocol = 'TROVES';
+    let protocol = PROTOCOL_TROVES;
     let apply_parameters = build_prefunded_apply_parameters_with_token_address(
         :strategy_implementation_addr,
         account_to_fund: apply_caller_2,
@@ -1244,7 +1247,7 @@ fn test_deposit_troves_failure_on_troves() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: TBTC,
-        protocol: 'TROVES',
+        protocol: PROTOCOL_TROVES,
     );
     let position_owner = get_position_owner(
         :strategy_implementation_addr, parameters: @apply_parameters.parameters,
@@ -1343,7 +1346,7 @@ fn test_apply_endur_with_reporter_emits_order_created() {
         :strategy_implementation_addr,
         account_to_fund: apply_caller,
         address_to_deploy_at: WBTC,
-        protocol: 'ENDUR',
+        protocol: PROTOCOL_ENDUR,
     );
 
     let mut spy = snforge_std::spy_events();
