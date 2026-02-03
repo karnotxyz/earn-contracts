@@ -7,7 +7,8 @@ use contracts::strategy_implementation::strategy_implementation::StrategyImpleme
     ApplyFailed, Deposited, MultiRouteSwap, PositionOwnerDeployed,
 };
 use contracts::strategy_implementation::utils::{
-    Strategy, StrategyTrait, TokenTrait, deserialize_signature, strategy_from_protocol_and_token,
+    PROTOCOL_AVNU, PROTOCOL_TROVES, Strategy, StrategyTrait, TokenTrait, deserialize_signature,
+    strategy_from_protocol_and_token,
 };
 use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::cheatcodes::events::Event;
@@ -281,7 +282,7 @@ fn dummy_avnu_parameters(
     Serde::serialize(@eth_address, ref avnu_parameters);
     serialize_signature(signature: @signature, ref calldata: avnu_parameters);
     Serde::serialize(@chain_id, ref avnu_parameters);
-    Serde::serialize(@'AVNU', ref avnu_parameters);
+    Serde::serialize(@PROTOCOL_AVNU, ref avnu_parameters);
     // Serialize the avnu parameters.
     Serde::serialize(@avnu_parameters_to_serialize, ref avnu_parameters);
     avnu_parameters.span()
@@ -468,7 +469,7 @@ pub(crate) fn assert_deposited_event(
 
     // Expected `Deposited.token` (the asset deposited into the vault).
     let mut deposited_token = wrapper_token;
-    if protocol == 'TROVES' {
+    if protocol == PROTOCOL_TROVES {
         deposited_token =
             Strategy::Endur(TokenTrait::new_from_token_address(token_in: wrapper_token))
             .strategy_address();
