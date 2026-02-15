@@ -1,15 +1,3 @@
-use contracts::known_addresses::{AVNU_EXCHANGE, MIDAS_RE7_BTC};
-use contracts::strategy_implementation::avnu_interface::{AvnuParameters, Route};
-use contracts::strategy_implementation::interface::{
-    IStrategyImplementationDispatcher, IStrategyImplementationDispatcherTrait,
-};
-use contracts::strategy_implementation::strategy_implementation::StrategyImplementation::{
-    ApplyFailed, Deposited, MultiRouteSwap, PositionOwnerDeployed,
-};
-use contracts::strategy_implementation::utils::{
-    PROTOCOL_AVNU, PROTOCOL_TROVES, Strategy, StrategyTrait, TokenTrait, deserialize_signature,
-    strategy_from_protocol_and_token,
-};
 use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::cheatcodes::events::Event;
 use snforge_std::{ContractClassTrait, DeclareResultTrait, TokenImpl};
@@ -21,10 +9,21 @@ use starkware_utils_testing::test_utils::{
     assert_expected_event_emitted, cheat_caller_address_once, set_account_as_app_governor,
     set_account_as_app_role_admin,
 };
-use crate::test_utils::{
-    APP_GOVERNOR, APP_ROLE_ADMIN, GOVERNANCE_ADMIN, eth_address_to_account, get_event_by_selector,
-    setup_account_factory_test_env,
+use strategy_implementation::avnu_interface::{AvnuParameters, Route};
+use strategy_implementation::interface::{
+    IStrategyImplementationDispatcher, IStrategyImplementationDispatcherTrait,
 };
+use strategy_implementation::known_addresses::{AVNU_EXCHANGE, MIDAS_RE7_BTC};
+use strategy_implementation::strategy_implementation::StrategyImplementation::{
+    ApplyFailed, Deposited, MultiRouteSwap, PositionOwnerDeployed,
+};
+use strategy_implementation::utils::{
+    PROTOCOL_AVNU, PROTOCOL_TROVES, Strategy, StrategyTrait, TokenTrait, deserialize_signature,
+    strategy_from_protocol_and_token,
+};
+use testing_utils::account_factory_utils::{eth_address_to_account, setup_account_factory_test_env};
+use testing_utils::constants::{APP_GOVERNOR, APP_ROLE_ADMIN, GOVERNANCE_ADMIN};
+use testing_utils::event_helpers::get_event_by_selector;
 
 
 #[derive(Drop, Copy)]
@@ -578,11 +577,11 @@ pub trait IERC4626DepositMintMock<TContractState> {
 
 #[starknet::contract]
 pub mod ERC4626DepositMintMock {
-    use contracts::strategy_implementation::test_utils::IERC4626DepositMintMock;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin::token::erc20::{DefaultConfig, ERC20Component, ERC20HooksEmptyImpl};
     use starknet::ContractAddress;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use strategy_implementation::test_utils::IERC4626DepositMintMock;
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
 
@@ -694,8 +693,8 @@ pub(crate) fn deploy_4626_failure_mock(address_to_deploy_at: ContractAddress) {
 // -----------------------------------------------------------------------------
 #[starknet::contract]
 pub mod DummyAvnu {
-    use contracts::strategy_implementation::avnu_interface::AvnuParameters;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use strategy_implementation::avnu_interface::AvnuParameters;
 
     #[storage]
     struct Storage {}
@@ -731,8 +730,8 @@ pub(crate) fn deploy_dummy_avnu(address_to_deploy_at: ContractAddress) {
 // -----------------------------------------------------------------------------
 #[starknet::contract]
 pub mod DummyAvnuFailure {
-    use contracts::strategy_implementation::avnu_interface::AvnuParameters;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use strategy_implementation::avnu_interface::AvnuParameters;
 
     #[storage]
     struct Storage {}
@@ -767,7 +766,7 @@ pub(crate) fn deploy_dummy_avnu_failure(address_to_deploy_at: ContractAddress) {
 // -----------------------------------------------------------------------------
 #[starknet::contract]
 pub mod DummyAvnuFalse {
-    use contracts::strategy_implementation::avnu_interface::AvnuParameters;
+    use strategy_implementation::avnu_interface::AvnuParameters;
     #[storage]
     struct Storage {}
 
@@ -783,4 +782,15 @@ pub(crate) fn deploy_dummy_avnu_false(address_to_deploy_at: ContractAddress) {
 
     let (addr, _) = cls.deploy_at(@calldata, address_to_deploy_at).unwrap_syscall();
     assert!(addr == address_to_deploy_at, "deploy_at failed");
+}
+
+/// Deploy the EarnReporter contract and return its address.
+pub(crate) fn deploy_earn_reporter(owner: ContractAddress) -> ContractAddress {
+    let earn_reporter_class = snforge_std::declare("EarnReporter")
+        .unwrap_syscall()
+        .contract_class();
+    let (earn_reporter_addr, _) = earn_reporter_class
+        .deploy(@array![owner.into()])
+        .unwrap_syscall();
+    earn_reporter_addr
 }

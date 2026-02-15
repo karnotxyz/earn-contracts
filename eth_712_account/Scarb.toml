@@ -1,0 +1,23 @@
+[package]
+name = "eth_712_account"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+openzeppelin.workspace = true
+starknet.workspace = true
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+
+[[target.starknet-contract]]
+sierra = true
+
+[profile.dev.cairo]
+unstable-add-statements-functions-debug-info = true
+unstable-add-statements-code-locations-debug-info = true
+inlining-strategy = "avoid"
+
+[scripts]
+test = "snforge test"

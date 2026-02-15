@@ -1,0 +1,37 @@
+[package]
+name = "account_factory"
+edition.workspace = true
+version.workspace = true
+
+[lib]
+
+[dependencies]
+contracts = { path = "../contracts" }
+openzeppelin.workspace = true
+starknet.workspace = true
+starkware_utils.workspace = true
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+starkware_utils_testing.workspace = true
+testing_utils = { path = "../testing_utils" }
+
+[[target.starknet-contract]]
+sierra = true
+
+[[test]]
+build-external-contracts = [
+    "contracts::primer::primer::Primer",
+    "testing_utils::dummy_contracts::DummyEthAddressContract",
+    "testing_utils::dummy_contracts::SecondDummyEthAddressContract",
+]
+name = "account_factory_unittest"
+
+[profile.dev.cairo]
+unstable-add-statements-functions-debug-info = true
+unstable-add-statements-code-locations-debug-info = true
+inlining-strategy = "avoid"
+
+[scripts]
+test = "snforge test"

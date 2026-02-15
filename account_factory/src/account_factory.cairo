@@ -13,8 +13,8 @@ pub trait IAccountFactory<TContractState> {
 #[starknet::contract]
 pub mod AccountFactory {
     use RolesComponent::InternalTrait as RolesInternalTrait;
-    use contracts::account_factory::account_factory::IAccountFactory;
-    use contracts::account_factory::utils::{
+    use account_factory::account_factory::IAccountFactory;
+    use account_factory::utils::{
         IEthAccountInitializerDispatcher, IEthAccountInitializerDispatcherTrait, PRIMER_CLASS_HASH,
         eth_address_to_account, is_deployed,
     };

@@ -1,15 +1,14 @@
-use contracts::known_addresses::AVNU_EXCHANGE;
-use contracts::strategy_implementation::avnu_interface::{
-    AvnuParameters, IAvnuDispatcher, IAvnuDispatcherTrait,
-};
 use core::hash::HashStateTrait;
 use core::panic_with_felt252;
 use core::pedersen::PedersenTrait;
 use starknet::ContractAddress;
 use starknet::secp256_trait::Signature;
-use crate::known_addresses::{
-    ENDUR_LBTC, ENDUR_SOLVBTC, ENDUR_TBTC, ENDUR_WBTC, FORGE_YIELDS_WBTC, LBTC, NOON_WBTC, SOLVBTC,
-    TBTC, TROVES_LBTC, TROVES_SOLVBTC, TROVES_TBTC, TROVES_WBTC, WBTC,
+use strategy_implementation::avnu_interface::{
+    AvnuParameters, IAvnuDispatcher, IAvnuDispatcherTrait,
+};
+use strategy_implementation::known_addresses::{
+    AVNU_EXCHANGE, ENDUR_LBTC, ENDUR_SOLVBTC, ENDUR_TBTC, ENDUR_WBTC, FORGE_YIELDS_WBTC, LBTC,
+    NOON_WBTC, SOLVBTC, TBTC, TROVES_LBTC, TROVES_SOLVBTC, TROVES_TBTC, TROVES_WBTC, WBTC,
 };
 
 

@@ -1,36 +1,30 @@
 [package]
-edition.workspace = true
 name = "contracts"
-version.workspace = true
+# Pinned to ensure Primer class hash stability - do not change, is it would break PRIMER_CLASS_HASH
+edition = "2024_07"
+version = "0.1.0"
+
+[lib]
 
 [dependencies]
-openzeppelin.workspace = true
-openzeppelin_upgrades.workspace = true
-starknet.workspace = true
-starkware_utils.workspace = true
+# Pinned to ensure Primer class hash stability - do not change, is it would break PRIMER_CLASS_HASH
+starknet = "2.12.2"
 
 [dev-dependencies]
-assert_macros.workspace = true
 snforge_std.workspace = true
 starkware_utils_testing.workspace = true
 
 [[target.starknet-contract]]
 sierra = true
 
-[scripts]
-test = "snforge test"
-
-[lib]
-
 [profile.dev.cairo]
-inlining-strategy = "avoid"
-panic-backtrace = true
-unstable-add-statements-code-locations-debug-info = true
 unstable-add-statements-functions-debug-info = true
+unstable-add-statements-code-locations-debug-info = true
+inlining-strategy = "avoid"
 
 [profile.release.cairo]
-inlining-strategy = 30
+# Explicit release settings for deterministic Primer class hash
+sierra-replace-ids = true
 
-[[test]]
-build-external-contracts = ["starkware_utils::erc20::erc20_mocks::DualCaseERC20Mock"]
-name = "contracts_unittest"
+[scripts]
+test = "snforge test"

@@ -5,7 +5,7 @@
 
 #[starknet::contract]
 pub mod RegisterInterfacesEIC {
-    use contracts::eth_712_account::interface::IEIC;
+    use eth_712_account::interface::IEIC;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
 
