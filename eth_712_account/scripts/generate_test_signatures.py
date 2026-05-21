@@ -71,7 +71,7 @@ def sign_outside_execution(
     evm_chain_id: int = ETH_CHAIN_ID,
     sn_chain_name: str = SN_CHAIN_ID,
 ) -> dict:
-    """Sign an OutsideExecution and return 6-felt signature dict."""
+    """Sign an ArcxExecution and return 6-felt signature dict."""
     msg_hash = outside_execution_msg_hash(oe, sn_chain_name, contract_address, evm_chain_id)
     return sign_and_split(msg_hash, PRIVATE_KEY, evm_chain_id)
 
@@ -120,7 +120,7 @@ def build_validate_metadata(nonce: int = VALIDATE_NONCE) -> dict:
 
 
 def _build_oe(calls: list[dict], nonce: int, caller: int = ANY_CALLER) -> dict:
-    """Build an OutsideExecution dict with default timestamps."""
+    """Build an ArcxExecution dict with default timestamps."""
     return {
         "caller": caller,
         "nonce": nonce,
@@ -160,7 +160,7 @@ def generate_basic_outside_execution(
     evm_chain_id: int = ETH_CHAIN_ID,
     sn_chain_name: str = SN_CHAIN_ID,
 ) -> dict:
-    """EFO signature for basic OutsideExecution with empty calls."""
+    """EFO signature for basic ArcxExecution with empty calls."""
     oe = _build_oe([], nonce)
     return sign_outside_execution(oe, contract_address, evm_chain_id, sn_chain_name)
 
@@ -306,13 +306,13 @@ def generate_all_signatures() -> list[str]:
     sig = generate_basic_outside_execution(addr)
     blocks.append(format_signature_cairo(
         sig, "get_outside_execution_signature",
-        "EFO signature: empty calls, nonce=1, chain_id=1.",
+        "EFO signature: empty ArcxExecution calls, nonce=1, chain_id=1.",
     ))
 
     sig = generate_basic_outside_execution(addr, evm_chain_id=2)
     blocks.append(format_signature_cairo(
         sig, "get_signature_evm_chain_id_2",
-        "EFO signature: empty calls, nonce=1, chain_id=2.",
+        "EFO signature: empty ArcxExecution calls, nonce=1, chain_id=2.",
     ))
 
     sig = generate_wrong_sn_chain_name(addr)

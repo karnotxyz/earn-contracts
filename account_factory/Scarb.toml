@@ -19,6 +19,7 @@ testing_utils = { path = "../testing_utils" }
 
 [[target.starknet-contract]]
 sierra = true
+casm = true
 
 [[test]]
 build-external-contracts = [

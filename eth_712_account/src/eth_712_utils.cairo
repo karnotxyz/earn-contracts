@@ -16,10 +16,15 @@ const EIP712_DOMAIN_TYPE_HASH: u256 =
 const CALL_TYPE_HASH: u256 =
     0x7793b9bed3b87c6119fe923f0da4e85e1f97a03272a446514622ee7bd62ad25f_u256;
 
-// keccak256("OutsideExecution(Call[] calls,uint256 caller,uint256 nonce,uint256
-// execute_after,uint256 execute_before)Call(...)")
-const OUTSIDE_EXECUTION_TYPE_HASH: u256 =
-    0x57fbef2abe14202f3651b3935a8feddd357b8f83a862e046239d196ec76f281e_u256;
+// keccak256("Call(uint256 ArcxContract,uint256 ArcxFunction,uint256[] ArcxCalldata)")
+const ARCX_CALL_TYPE_HASH: u256 =
+    0x301e85ce598535c8b16e65e51e1232daab4f20c07873e0dab79c2b191622ace7_u256;
+
+// keccak256("ArcxExecution(Call[] calls,uint256 caller,uint256 nonce,uint256
+// execute_after,uint256 execute_before)Call(uint256 ArcxContract,uint256
+// ArcxFunction,uint256[] ArcxCalldata)")
+const ARCX_EXECUTION_TYPE_HASH: u256 =
+    0xaa5fa406611363ea7ac2f2a5e7d063da4ab4031d9ab570d356d3d0c05f5c703d_u256;
 
 // EIP-712 encodeType hash for TransactionMetadata
 // keccak256("TransactionMetadata(uint256 version,uint256 chain_id,uint256[]
@@ -100,6 +105,17 @@ pub fn push_call(ref res: ByteArray, call: @Call) {
     push_keccak(ref res, @byte_array);
 }
 
+pub fn push_arcx_call(ref res: ByteArray, call: @Call) {
+    let mut byte_array: ByteArray = "";
+    let Call { to, selector, calldata } = *call;
+
+    push_u256(ref byte_array, ARCX_CALL_TYPE_HASH);
+    push_felt(ref byte_array, to.into());
+    push_felt(ref byte_array, selector);
+    push_felt_array(ref byte_array, calldata);
+    push_keccak(ref res, @byte_array);
+}
+
 /// Adds an array of Call to the byte array (as the hash of the concatenation of the Calls).
 fn push_call_array(ref res: ByteArray, calls: Span<Call>) {
     let mut byte_array: ByteArray = "";
@@ -109,15 +125,23 @@ fn push_call_array(ref res: ByteArray, calls: Span<Call>) {
     push_keccak(ref res, @byte_array);
 }
 
+fn push_arcx_call_array(ref res: ByteArray, calls: Span<Call>) {
+    let mut byte_array: ByteArray = "";
+    for x in calls {
+        push_arcx_call(ref byte_array, x);
+    }
+    push_keccak(ref res, @byte_array);
+}
+
 pub fn push_outside_execution(ref res: ByteArray, outside_execution: @OutsideExecution) {
     let mut byte_array: ByteArray = "";
 
-    push_u256(ref byte_array, OUTSIDE_EXECUTION_TYPE_HASH);
+    push_u256(ref byte_array, ARCX_EXECUTION_TYPE_HASH);
     let OutsideExecution {
         caller, nonce, execute_after, execute_before, calls,
     } = *outside_execution;
 
-    push_call_array(ref byte_array, calls);
+    push_arcx_call_array(ref byte_array, calls);
     push_felt(ref byte_array, caller.into());
     push_felt(ref byte_array, nonce);
     push_felt(ref byte_array, execute_after.into());

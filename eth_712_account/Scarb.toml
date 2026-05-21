@@ -16,6 +16,7 @@ testing_utils = { path = "../testing_utils" }
 
 [[target.starknet-contract]]
 sierra = true
+casm = true
 
 [[test]]
 name = "eth_712_account_unittest"

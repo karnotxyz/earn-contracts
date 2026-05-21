@@ -1,0 +1,10 @@
+{
+  "description": "Starknet Sepolia factory deployment profile. Fill factory.multisigAddress before executing.",
+  "starknet": {
+    "chainId": "SN_SEPOLIA"
+  },
+  "factory": {
+    "multisigAddress": "0x0",
+    "upgradeDelaySeconds": "0"
+  }
+}

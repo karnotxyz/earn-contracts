@@ -3,3 +3,6 @@ venv*/
 target/
 .spr.yml
 .snfoundry_cache/
+scripts/.env
+scripts/node_modules/
+scripts/tools/*

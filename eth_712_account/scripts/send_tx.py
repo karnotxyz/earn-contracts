@@ -5,7 +5,7 @@ for the eth_712_account contract on Starknet.
 
 Modes:
   Regular TX: Signs and sends an InvokeV3 transaction (__validate__ -> __execute__).
-  EFO (--efo): Signs an OutsideExecution and prints the calldata for execute_from_outside_v2.
+  EFO (--efo): Signs an ArcxExecution and prints the calldata for execute_from_outside_v2.
 
 Both modes use the same dynamic EIP-712 domain separator (matching eth_712_utils.cairo):
 - name: keccak(SN_CHAIN_ID)
@@ -169,7 +169,7 @@ def serialize_calls_to_felts(calls: list) -> list:
 
 
 def serialize_efo_calldata(oe: dict, calls: list, signature: list) -> list:
-    """Serialize OutsideExecution + signature as calldata for execute_from_outside_v2."""
+    """Serialize ArcxExecution + signature as calldata for execute_from_outside_v2."""
     calldata = [oe["caller"], oe["nonce"], oe["execute_after"], oe["execute_before"]]
     calldata.append(len(calls))
     for call in calls:
@@ -326,7 +326,7 @@ def sign_efo(
     oe: dict, calls: list[dict], signer, sn_chain_name: str,
     contract_address: int, evm_chain_id: int, debug: bool = False,
 ) -> list:
-    """Sign an OutsideExecution and return 6-felt signature list."""
+    """Sign an ArcxExecution and return 6-felt signature list."""
     canonical_calls = [normalize_call(c) for c in calls]
     oe_with_calls = {**oe, "calls": canonical_calls}
     msg_hash = outside_execution_msg_hash(
@@ -364,7 +364,7 @@ def handle_efo(args, calls, calls_source, signer, account_address, sn_chain_name
     print(f"EVM Chain ID: {evm_chain_id}")
 
     caller_label = " (ANY_CALLER)" if caller == ANY_CALLER else ""
-    print(f"\nOutsideExecution:")
+    print(f"\nArcxExecution:")
     print(f"  caller: {hex(caller)}{caller_label}")
     print(f"  nonce: {nonce}")
     print(f"  execute_after: {oe['execute_after']}")
