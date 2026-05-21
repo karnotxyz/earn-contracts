@@ -1,0 +1,10 @@
+{
+  "description": "Starknet Mainnet factory deployment profile. Fill factory.multisigAddress before executing.",
+  "starknet": {
+    "chainId": "SN_MAIN"
+  },
+  "factory": {
+    "multisigAddress": "0x0",
+    "upgradeDelaySeconds": "86400"
+  }
+}

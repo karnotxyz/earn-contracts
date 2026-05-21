@@ -5,7 +5,8 @@ EXPECTED_CLASS_HASH="0x00123e6bc1c14ae9934e933d3f64916a6116dd6b036a922b2b1f0815e
 
 # Verify Scarb version for reproducible class hash computation
 REQUIRED_SCARB_VERSION="2.14.0"
-CURRENT_SCARB_VERSION=$(scarb --version | grep -oP 'scarb \K[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+CURRENT_SCARB_VERSION=$(scarb --version | awk '/^scarb / { print $2; exit }')
+CURRENT_SCARB_VERSION=${CURRENT_SCARB_VERSION:-unknown}
 echo "Scarb version: $CURRENT_SCARB_VERSION (expected: $REQUIRED_SCARB_VERSION)"
 if [ "$CURRENT_SCARB_VERSION" != "$REQUIRED_SCARB_VERSION" ]; then
     echo "WARNING: Scarb version mismatch. Class hash may differ."

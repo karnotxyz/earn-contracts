@@ -1,0 +1,10 @@
+{
+  "description": "Public fixture config",
+  "starknet": {
+    "chainId": "SN_SEPOLIA"
+  },
+  "factory": {
+    "multisigAddress": "0x1234",
+    "upgradeDelaySeconds": "3600"
+  }
+}

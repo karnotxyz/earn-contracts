@@ -310,67 +310,67 @@ pub fn build_outside_execution_with_specific_caller(
 
 // GENERATED-SIGNATURES-START (by scripts/generate_test_signatures.py -- do not edit manually)
 
-/// EFO signature: empty calls, nonce=1, chain_id=1.
+/// EFO signature: empty ArcxExecution calls, nonce=1, chain_id=1.
 pub fn get_outside_execution_signature() -> Array<felt252> {
     array![
-        0x7ffb66a7163f54ab83a435079d74198d, 0x5ceb653460c57bda62685e60d4b67dc9,
-        0x7c07a7689645c4ec1775cd794e6a6bdc, 0xfaecbd63a4629b6e3d43e88568000326, 27, 1,
+        0x2135fdc65da83ba35afb8b7839aa9a1e, 0xc5f151ba34a91e1ad2c15d3fa0a84524,
+        0x67fcbae6638b6902bcb5493067dc5bc2, 0x557960ca64baa7953004fb37a0f356a2, 28, 1,
     ]
 }
 
-/// EFO signature: empty calls, nonce=1, chain_id=2.
+/// EFO signature: empty ArcxExecution calls, nonce=1, chain_id=2.
 pub fn get_signature_evm_chain_id_2() -> Array<felt252> {
     array![
-        0x18a89b5013e9920a4a6a7f68a96e7ae4, 0xaedf914a0262920a3587429fbe9fc6a1,
-        0x71d90cd8ba933785e1f9310f75527dc4, 0x4af653a5e6924e30858c257ad6dc36bd, 28, 2,
+        0x71796ed4bda4f7b83b402c71e17783d4, 0xd22372be5159e3529ccaa2d956d29a0f,
+        0x28305c2d6ada573bfc5de34113726343, 0xef18f5e303cfd90d52500dbb839c82ca, 28, 2,
     ]
 }
 
 /// EFO signature signed with SN_SEPOLIA domain (fails against SN_MAIN).
 pub fn get_signature_wrong_sn_chain_name() -> Array<felt252> {
     array![
-        0x17ffed4d61c7339e41abad0f195e514f, 0x12fc8d4f5d27d5e2465955842e13c655,
-        0x68f5bb339084078d1a34bbed9c5a3c52, 0xaf67088632eee196f68414a550359178, 28, 1,
+        0x3b12cc379210e08f6f48be36bd75d5ee, 0x8f5ee64b45619a7c4bc7699843adcdaa,
+        0x5a3ae1381a9f096922c09abda61cc455, 0x9060e4c06ff9e98749709de4bdad2524, 27, 1,
     ]
 }
 
 /// EFO signature signed with wrong contract address (domain mismatch).
 pub fn get_signature_wrong_contract_address() -> Array<felt252> {
     array![
-        0x060836bf3cbe32460860af643ccd889d, 0x31673c0a6f4686d5cd41c9003f390a81,
-        0x1d39adf7397f46f16ca26ee7979844eb, 0xd88fdcb5a1f5602ad4d95c8cf0ada12a, 28, 1,
+        0x3c862242455ea3718871aeaeee950f72, 0xc44cb7f534dd7a74401471f265f822f1,
+        0x19c9687dd9dc762ac65fdcc916426ee8, 0x36dfb8bcda9b31d1ca161f8187a11f90, 28, 1,
     ]
 }
 
 /// EFO signature: approve(0x1234, 500), nonce=100.
 pub fn get_single_call_approve_signature() -> Array<felt252> {
     array![
-        0x964d17d195fc47aba6702c78cbb8efc2, 0x9f154a7cb4f786c87247bb20aaef2800,
-        0x4fb1263e4d824bf8886d1809927e10b3, 0x0630802ef735ec030b55521174002356, 27, 1,
+        0x14bf4fd134ac5e3680addff2580496d6, 0x17667a72ed64e9210ab113058bb7b8e3,
+        0x64cac333aa25e37085ddc578ed08c61b, 0xae844f10253f80c991f89ebfd61c6c6b, 28, 1,
     ]
 }
 
 /// EFO signature: approve(500) + transfer(100), nonce=101.
 pub fn get_multi_call_signature() -> Array<felt252> {
     array![
-        0xb914302a1acb85e3f6b155625fea3dad, 0x9e0069305c9c2cc94ec6180529e265ce,
-        0x2fe4565842cb96b600ff4c58e45b55e6, 0xd55a87fddd1cc8e553dca9a7456d465e, 27, 1,
+        0xfec375e6720cb6a14be0fccff43d1ae0, 0x3e1b96f960d31dd8d0ed2e1af463e0b6,
+        0x4deb79c4ac42bde0fe7356a8a872384e, 0x3b957e5e94e8ff0a5700ee38b64c6a4b, 28, 1,
     ]
 }
 
 /// EFO signature: approve(500) + transfer(1001, fails), nonce=102.
 pub fn get_atomicity_test_signature() -> Array<felt252> {
     array![
-        0x1609bcddfc92674937de1c281392b0ea, 0xb96e843d8911d3e009ce55aecdca7ab4,
-        0x110742199fc56f913d2eeab31f8c5251, 0x53c98399effa51de52da5a029b57e578, 28, 1,
+        0xa0331e31fcc4e19d4dba7f5e07be0635, 0xe8f0d86480f3ad684044b4728046969c,
+        0x722e6c524c301956e0ed7110ee522257, 0xebe4901cda899634c1884ef2a68f0da7, 27, 1,
     ]
 }
 
 /// EFO signature: specific caller=0xCAFE, nonce=103, empty calls.
 pub fn get_specific_caller_signature() -> Array<felt252> {
     array![
-        0xa9855b38d21f9f8aea399f9a1d187319, 0xc8f9e2b75f011d953bb7206bd62fd0c6,
-        0x640bd21aa3ccccfa412427e8a0ceeed3, 0xee65414d86523ac9b8772e99468d7e80, 27, 1,
+        0x48bd92070292fe1ba4a18f5b84cdadb8, 0xbc52fd0efd69c6ed686db1f384fe00c5,
+        0x6f0e7dbb824bfe1125b8d760ead04297, 0xf986b450b5c746ac065dbb12f63221e5, 27, 1,
     ]
 }
 
@@ -401,8 +401,8 @@ pub fn get_validate_wrong_chain_signature() -> Array<felt252> {
 /// EFO signature: upgrade(FIXED_UPGRADE_TARGET_CLASS_HASH, None), nonce=200.
 pub fn get_efo_upgrade_signature() -> Array<felt252> {
     array![
-        0xa5bf0961e796aa50e1c3e7fea52d8f85, 0x5ef33aa9e631ac4b43cadc46ce8f0ec4,
-        0x6b48aa24b15cf9f0d7e8bdd0d880aa61, 0x5e9a9cbaa86bca675b873ca30aafe49f, 28, 1,
+        0x131eb773a1f346e3668e462a2c97f45f, 0x4b82fee55f6c54fab61706cad4878a85,
+        0x02a7e8409a556e82d3bdb9fb3cdaec58, 0x397b6ecb89edd6ba4acbbed18de17ba4, 28, 1,
     ]
 }
 
