@@ -18,7 +18,13 @@ function applySharedOptions<T extends { option: (...args: any[]) => T }>(
   command
     .option("--env <env>", "Deployment environment name")
     .option("--config-path <path>", "Override deployment config path")
-    .option("--manifest-path <path>", "Override deployment manifest path");
+    .option("--manifest-path <path>", "Override deployment manifest path")
+    .option("--wait-retry-interval-ms <ms>", "Override Starknet transaction wait poll interval in milliseconds")
+    .option(
+      "--wait-success-states <states>",
+      "Comma-separated Starknet wait success states, e.g. PRE_CONFIRMED,ACCEPTED_ON_L2",
+    )
+    .option("--tip <tip>", "Override Starknet transaction tip; local devnet E2E can use 0");
 
   if (includeExecute) {
     command

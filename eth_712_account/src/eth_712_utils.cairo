@@ -41,10 +41,10 @@ const TRANSACTION_TYPE_HASH: u256 =
 // keccak("2") (version of the EIP-712 domain).
 const VERSION_HASH: u256 = 0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5_u256;
 
-// keccak256("\x19Ethereum Signed Message:\n41Sign to verify that you own this account.")
+// keccak256("\x19Ethereum Signed Message:\n40Sign to deploy your ArcX embedded wallet.")
 // msg_hash of the account ownership message. (Fixed per all chains).
 const OWNERSHIP_TRANSFER_MSG_HASH: u256 =
-    0x3ce976d55131cd0bdd49f20afbded052d8e907dc6034d95cdf117a8fd7752e3c_u256;
+    0x8ea1e2b6c60c2f140a2de350e431630b44cd4ae34ac27587a7048e4598c526cb_u256;
 
 // Transaction version validation constants
 pub const MIN_TRANSACTION_VERSION: u256 = 3;

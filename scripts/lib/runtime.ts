@@ -10,6 +10,9 @@ export interface CommandOptions {
   execute?: boolean;
   confirmMainnet?: boolean;
   allowDirty?: boolean;
+  waitRetryIntervalMs?: string;
+  waitSuccessStates?: string;
+  tip?: string;
 }
 
 export interface CommandContext {
@@ -88,6 +91,16 @@ export async function loadCommandContext(
   options: CommandOptions,
   detectChain: ChainDetector = detectStarknetChain,
 ): Promise<CommandContext> {
+  if (options.waitRetryIntervalMs) {
+    process.env.ARCX_DEPLOY_WAIT_RETRY_INTERVAL_MS = options.waitRetryIntervalMs;
+  }
+  if (options.waitSuccessStates) {
+    process.env.ARCX_DEPLOY_WAIT_SUCCESS_STATES = options.waitSuccessStates;
+  }
+  if (options.tip) {
+    process.env.ARCX_DEPLOY_TIP = options.tip;
+  }
+
   const env = options.env || getDefaultEnvName();
   const loadedConfig = loadDeploymentConfig(env, options.configPath);
   const loadedManifest = loadManifest(env, options.manifestPath);

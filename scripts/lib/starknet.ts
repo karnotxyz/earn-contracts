@@ -1,6 +1,13 @@
 import { execSync } from "child_process";
 import * as path from "path";
-import { Account, CallData, Contract, RpcProvider } from "starknet";
+import {
+  Account,
+  CallData,
+  Contract,
+  RpcProvider,
+  type UniversalDetails,
+  type waitForTransactionOptions,
+} from "starknet";
 import type { DeploymentConfig } from "./config";
 import { getRepoRoot } from "./config";
 import type { DeploymentManifest } from "./manifest";
@@ -8,6 +15,11 @@ import type { StarknetArtifact } from "./artifacts";
 import { relativeArtifactPath } from "./artifacts";
 
 const REPO_ROOT = getRepoRoot();
+const ALLOWED_WAIT_SUCCESS_STATES = new Set([
+  "PRE_CONFIRMED",
+  "ACCEPTED_ON_L2",
+  "ACCEPTED_ON_L1",
+]);
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -39,6 +51,54 @@ export function getAccount(config: DeploymentConfig, provider?: RpcProvider): Ac
   });
 }
 
+function deploymentWaitOptions(): waitForTransactionOptions {
+  const options: waitForTransactionOptions = {};
+
+  if (process.env.ARCX_DEPLOY_WAIT_RETRY_INTERVAL_MS) {
+    const retryInterval = Number(process.env.ARCX_DEPLOY_WAIT_RETRY_INTERVAL_MS);
+    if (!Number.isInteger(retryInterval) || retryInterval <= 0) {
+      throw new Error("ARCX_DEPLOY_WAIT_RETRY_INTERVAL_MS must be a positive integer");
+    }
+    options.retryInterval = retryInterval;
+  }
+
+  if (process.env.ARCX_DEPLOY_WAIT_SUCCESS_STATES) {
+    const successStates = process.env.ARCX_DEPLOY_WAIT_SUCCESS_STATES.split(",")
+      .map((state) => state.trim().toUpperCase())
+      .filter(Boolean);
+
+    for (const state of successStates) {
+      if (!ALLOWED_WAIT_SUCCESS_STATES.has(state)) {
+        throw new Error(`Unsupported Starknet wait success state: ${state}`);
+      }
+    }
+
+    options.successStates = successStates as waitForTransactionOptions["successStates"];
+  }
+
+  return options;
+}
+
+async function waitForDeploymentTransaction(provider: RpcProvider, transactionHash: string): Promise<void> {
+  await provider.waitForTransaction(transactionHash, deploymentWaitOptions());
+}
+
+function deploymentTransactionDetails(): UniversalDetails {
+  const tip = process.env.ARCX_DEPLOY_TIP;
+  if (!tip) return {};
+
+  try {
+    BigInt(tip);
+  } catch {
+    throw new Error("ARCX_DEPLOY_TIP must be a bigint-compatible decimal or 0x-prefixed value");
+  }
+
+  // Devnet E2E passes tip=0 so starknet.js does not scan recent blocks for a
+  // recommended tip before every declare/deploy. Production deploys keep the
+  // library default by omitting this option.
+  return { tip };
+}
+
 export function buildFactoryConstructorCalldata(params: {
   governanceAdmin: string;
   upgradeDelay: string;
@@ -66,10 +126,10 @@ export async function declareClassIfNeeded(params: {
   const tx = await account.declareIfNot({
     contract: params.artifact.sierraContract,
     casm: params.artifact.casmContract,
-  });
+  }, deploymentTransactionDetails());
 
   if (tx.transaction_hash) {
-    await provider.waitForTransaction(tx.transaction_hash);
+    await waitForDeploymentTransaction(provider, tx.transaction_hash);
   }
 
   params.manifest.declaredClasses[params.artifact.artifactId] = {
@@ -108,7 +168,7 @@ export async function deployFactoryIfNeeded(params: {
   const response = await account.deployContract({
     classHash: params.factoryArtifact.classHash,
     constructorCalldata,
-  });
+  }, deploymentTransactionDetails());
 
   const address = Array.isArray(response.contract_address)
     ? response.contract_address[0]
@@ -117,6 +177,8 @@ export async function deployFactoryIfNeeded(params: {
   if (!address) {
     throw new Error("Factory deployment transaction did not return a contract address");
   }
+
+  await waitForDeploymentTransaction(provider, response.transaction_hash);
 
   params.manifest.contracts.factory = {
     address,
