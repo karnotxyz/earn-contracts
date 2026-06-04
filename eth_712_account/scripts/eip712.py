@@ -23,9 +23,8 @@ MASK_250 = (1 << 250) - 1
 # ============================================================================
 
 EIP712_DOMAIN_TYPE_HASH = 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f
-CALL_TYPE_HASH = 0x7793b9bed3b87c6119fe923f0da4e85e1f97a03272a446514622ee7bd62ad25f
-ARCX_CALL_TYPE_HASH = 0x301E85CE598535C8B16E65E51E1232DAAB4F20C07873E0DAB79C2B191622ACE7
-ARCX_EXECUTION_TYPE_HASH = 0xAA5FA406611363EA7AC2F2A5E7D063DA4AB4031D9AB570D356D3D0C05F5C703D
+CALL_TYPE_HASH = 0x301E85CE598535C8B16E65E51E1232DAAB4F20C07873E0DAB79C2B191622ACE7
+OUTSIDE_EXECUTION_TYPE_HASH = 0xAA5FA406611363EA7AC2F2A5E7D063DA4AB4031D9AB570D356D3D0C05F5C703D
 TRANSACTION_METADATA_TYPE_HASH = 0x3e1a84b9a25a2ffe216927b61cc91a10921dabd3305985281d0bb9707b0d8310
 TRANSACTION_TYPE_HASH = 0x1dc45489b8d4418703686ca441c4ea8ead534ff02815a47b9059490edf3a0c68
 VERSION_HASH = 0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5
@@ -116,30 +115,11 @@ def hash_call(call: dict) -> int:
     return keccak_ints(CALL_TYPE_HASH, call["to"], call["selector"], calldata_hash)
 
 
-def hash_arcx_call(call: dict) -> int:
-    """
-    Hash a Call inside ArcxExecution.
-
-    The values match Starknet's Call fields while the EIP-712 display names are
-    ArcxContract, ArcxFunction, and ArcxCalldata.
-    """
-    calldata_hash = hash_felt_array(call["calldata"])
-    return keccak_ints(ARCX_CALL_TYPE_HASH, call["to"], call["selector"], calldata_hash)
-
-
 def hash_call_array(calls: list[dict]) -> int:
     """Hash an array of Calls (keccak of concatenated call hashes)."""
     if not calls:
         return int.from_bytes(keccak256(b""), "big")
     data = b"".join(to_bytes32(hash_call(c)) for c in calls)
-    return int.from_bytes(keccak256(data), "big")
-
-
-def hash_arcx_call_array(calls: list[dict]) -> int:
-    """Hash an array of ArcxExecution Calls."""
-    if not calls:
-        return int.from_bytes(keccak256(b""), "big")
-    data = b"".join(to_bytes32(hash_arcx_call(c)) for c in calls)
     return int.from_bytes(keccak256(data), "big")
 
 
@@ -154,9 +134,9 @@ def hash_outside_execution(oe: dict) -> int:
 
     Field order: type_hash, hash(calls), caller, nonce, execute_after, execute_before.
     """
-    calls_hash = hash_arcx_call_array(oe.get("calls", []))
+    calls_hash = hash_call_array(oe.get("calls", []))
     return keccak_ints(
-        ARCX_EXECUTION_TYPE_HASH,
+        OUTSIDE_EXECUTION_TYPE_HASH,
         calls_hash,
         oe["caller"],
         oe["nonce"],
