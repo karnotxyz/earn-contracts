@@ -4,7 +4,7 @@
     "chainId": "SN_MAIN"
   },
   "factory": {
-    "multisigAddress": "0x0",
-    "upgradeDelaySeconds": "86400"
+    "multisigAddress": "0x06675a585b41597D02FD059a47189Bd7De88a389358E0f19163760149a8F63A8",
+    "upgradeDelaySeconds": "0"
   }
 }
