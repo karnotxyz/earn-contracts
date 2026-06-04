@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "env": "sepolia",
+  "createdAt": "2026-06-03T19:28:55.346Z",
+  "updatedAt": "2026-06-03T19:30:52.215Z",
+  "declaredClasses": {
+    "contracts:Primer:release": {
+      "artifact": "contracts:Primer:release",
+      "packageName": "contracts",
+      "contractName": "Primer",
+      "classHash": "0x123e6bc1c14ae9934e933d3f64916a6116dd6b036a922b2b1f0815e0d1d300",
+      "compiledClassHash": "0x17152f17524b4405f6d268a821987df29adef26f0067b54fc3eec182387c39a",
+      "sierraPath": "target/release/contracts_Primer.contract_class.json",
+      "casmPath": "target/release/contracts_Primer.compiled_contract_class.json",
+      "declaredAt": "2026-06-03T19:28:59.998Z",
+      "alreadyDeclaredOnChain": true
+    },
+    "eth_712_account:StarknetEth712Account:release": {
+      "artifact": "eth_712_account:StarknetEth712Account:release",
+      "packageName": "eth_712_account",
+      "contractName": "StarknetEth712Account",
+      "classHash": "0x5225932390f308bf79e69c6408f93d7de0a8a8b149d15d1a804f3958eb60010",
+      "compiledClassHash": "0x53aaac02918b7429449d215a8eba4feb9e2d4abe0c698c2fdbd357d8fa04dae",
+      "sierraPath": "target/release/eth_712_account_StarknetEth712Account.contract_class.json",
+      "casmPath": "target/release/eth_712_account_StarknetEth712Account.compiled_contract_class.json",
+      "declaredAt": "2026-06-03T19:30:20.742Z",
+      "transactionHash": "0x48d1106a68d25b4a1455a12b811a64a29989fc3c02913885777bd8820a532d4",
+      "alreadyDeclaredOnChain": false
+    },
+    "account_factory:AccountFactory:release": {
+      "artifact": "account_factory:AccountFactory:release",
+      "packageName": "account_factory",
+      "contractName": "AccountFactory",
+      "classHash": "0x7bf3c3167d1326cab8dd319188e8a5e875fcd9140602d6ffbaf64585e6c8d4d",
+      "compiledClassHash": "0x73ba61a0824fc07d9ad9c00350964e74486a1ad66c68a66a04e6e0490c310a3",
+      "sierraPath": "target/release/account_factory_AccountFactory.contract_class.json",
+      "casmPath": "target/release/account_factory_AccountFactory.compiled_contract_class.json",
+      "declaredAt": "2026-06-03T19:30:22.721Z",
+      "alreadyDeclaredOnChain": true
+    }
+  },
+  "contracts": {
+    "factory": {
+      "address": "0x7ef946324b5b32783503bef71d450d1b134f5d9358af8660018322d2e0e244e",
+      "contractType": "AccountFactory",
+      "chainId": "SN_SEPOLIA",
+      "classHash": "0x7bf3c3167d1326cab8dd319188e8a5e875fcd9140602d6ffbaf64585e6c8d4d",
+      "accountClassHash": "0x5225932390f308bf79e69c6408f93d7de0a8a8b149d15d1a804f3958eb60010",
+      "constructorCalldata": {
+        "governanceAdmin": "0x011dE9C756a84A99b5765183625cD7ad8EB6A0206cE2904Dbe478A1a1e5C0cb1",
+        "upgradeDelay": "0",
+        "accountClassHash": "0x5225932390f308bf79e69c6408f93d7de0a8a8b149d15d1a804f3958eb60010"
+      },
+      "deployedAt": "2026-06-03T19:30:52.213Z",
+      "transactionHash": "0x507fb343230a9edcba095232c3b60f466f8450b5883b5de76fda84211357b00"
+    }
+  },
+  "chainId": "SN_SEPOLIA",
+  "lastPlan": {
+    "mode": "apply",
+    "command": "factory",
+    "actions": [
+      "Declare StarknetEth712Account",
+      "Declare AccountFactory",
+      "Deploy AccountFactory with multisig governance and StarknetEth712Account class hash"
+    ],
+    "createdAt": "2026-06-03T19:30:52.215Z"
+  }
+}

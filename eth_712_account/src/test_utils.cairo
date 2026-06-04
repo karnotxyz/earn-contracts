@@ -385,8 +385,8 @@ pub fn get_validate_empty_calls_signature() -> Array<felt252> {
 /// __validate__ signature: approve(0x1234, 500), nonce=1.
 pub fn get_validate_with_approve_signature() -> Array<felt252> {
     array![
-        0xfdf4a332c8f6bded4b9670e59d8d90e6, 0xb1c10fd29b606f3522c62fc237d5ec1f,
-        0x7a4518381cf3240b4b96169848677726, 0xf642df7a6d69205f1f390f6205adab44, 27, 1,
+        0x21457e746fe92f58be2e8a3d371f5804, 0x2b3e11f6b78f55d9ba07037011a4e3d2,
+        0x43cee394ebac9f1dbefad5f86cd9dc40, 0x750fc183f1fe661eabd321915d0af938, 28, 1,
     ]
 }
 
@@ -409,8 +409,10 @@ pub fn get_efo_upgrade_signature() -> Array<felt252> {
 /// __validate__ signature: upgrade(FIXED_UPGRADE_TARGET_CLASS_HASH, None), nonce=2.
 pub fn get_validate_upgrade_signature() -> Array<felt252> {
     array![
-        0xb4146b116881b636b3e5df03f3d88139, 0x522594e6adbc196ed5747efc87f8e896,
-        0x77d92acd1c9e71fc89917065b8bb20d7, 0xfcdbe021378a82e41a644300aa089f2d, 28, 1,
+        0xc62615e3ced8580a871b7f82f4b07d08, 0xef185824b0eab71a02e7b3856d5b07b3,
+        0x0852e6d8a0e2cfc8777e5dae33956d92, 0x842f355cad0a00fb48411c52cdc1d5c1, 28, 1,
     ]
 }
 // GENERATED-SIGNATURES-END
+
+
