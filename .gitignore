@@ -6,3 +6,5 @@ target/
 scripts/.env
 scripts/node_modules/
 scripts/tools/*
+
+.idea
