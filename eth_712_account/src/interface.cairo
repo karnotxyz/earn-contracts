@@ -4,6 +4,9 @@ use starknet::{ClassHash, EthAddress};
 #[starknet::interface]
 pub trait IAccount712Admin<TContractState> {
     fn initialize(ref self: TContractState, eth_address: EthAddress, signature: Signature);
+    fn get_eth_address(self: @TContractState) -> EthAddress;
+    /// Change the signer through an authenticated account self-call.
+    fn set_eth_address(ref self: TContractState, new_eth_address: EthAddress);
     fn upgrade(
         ref self: TContractState,
         new_class_hash: ClassHash,
@@ -20,4 +23,11 @@ pub trait IEIC<TContractState> {
 #[derive(Drop, Debug, PartialEq, starknet::Event)]
 pub struct Upgraded {
     pub class_hash: ClassHash,
+}
+
+/// Emitted when the account's controlling Ethereum address changes.
+#[derive(Drop, Debug, PartialEq, starknet::Event)]
+pub struct EthAddressChanged {
+    pub previous_eth_address: EthAddress,
+    pub new_eth_address: EthAddress,
 }

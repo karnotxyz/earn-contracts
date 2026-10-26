@@ -17,7 +17,7 @@ pub mod StarknetEth712Account {
         is_tx_version_valid, is_valid_eth_signature, resource_bounds_as_felts,
     };
     use eth_712_account::interface::{
-        IAccount712Admin, IEICDispatcherTrait, IEICLibraryDispatcher, Upgraded,
+        EthAddressChanged, IAccount712Admin, IEICDispatcherTrait, IEICLibraryDispatcher, Upgraded,
     };
     use openzeppelin::account::extensions::src9::interface::ISRC9_V2_ID;
     use openzeppelin::account::extensions::src9::{ISRC9_V2, OutsideExecution};
@@ -53,6 +53,7 @@ pub mod StarknetEth712Account {
         #[flat]
         SRC5Event: SRC5Component::Event,
         Upgraded: Upgraded,
+        EthAddressChanged: EthAddressChanged,
     }
 
     // ================================
@@ -118,6 +119,18 @@ pub mod StarknetEth712Account {
             self.src5.register_interface(ISRC9_V2_ID);
             // Register Account interface (ISRC6) so that we can receive 721/1155 tokens.
             self.src5.register_interface(ISRC6_ID);
+        }
+
+        fn get_eth_address(self: @ContractState) -> EthAddress {
+            self.eth_address.read()
+        }
+
+        fn set_eth_address(ref self: ContractState, new_eth_address: EthAddress) {
+            self.assert_only_self();
+            assert(!new_eth_address.is_zero(), 'ZERO_ETH_ADDRESS');
+            let previous_eth_address = self.eth_address.read();
+            self.eth_address.write(new_eth_address);
+            self.emit(EthAddressChanged { previous_eth_address, new_eth_address });
         }
 
         fn upgrade(

@@ -150,6 +150,15 @@ Account contract with:
 - EIP-712 transaction and outside-execution hashing.
 - Ethereum secp256k1 signature recovery.
 - Self-only upgrade flow, with optional EIC initialization data.
+- Self-only `set_eth_address(new_eth_address)` signer rotation (zero addresses
+  are rejected), `get_eth_address()`, and an `EthAddressChanged` event.
+
+To migrate an existing account, its current EVM signer authorizes one batch of
+self-calls: `upgrade(new_class_hash, None)`, then `set_eth_address(new_address)`.
+The new class must already be declared. The account address, storage, and funds
+stay in place; subsequent signatures must use the new key. Updating the factory's
+class hash only changes future deployments. The application must verify access to
+the new key before migration and reconcile its signer record after confirmation.
 
 Python helpers in `eth_712_account/scripts` mirror the Cairo EIP-712 hashing
 logic:
